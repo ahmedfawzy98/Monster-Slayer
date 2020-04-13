@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monster Slayer</title>
+    <script src="/home/ahmed/Downloads/vue.js"></script>
+    <link rel="stylesheet" href="css/foundation.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <div id="app">
+      <section class="row">
+        <div class="small-6 columns">
+          <h1 class="text-center">YOU</h1>
+          <div class="healthbar">
+            <div class="healthbar text-center" :style="playerBarStyle">
+              {{ playerWidth }}
+            </div>
+          </div>
+        </div>
+        <div class="small-6 columns">
+          <h1 class="text-center">MONSTER</h1>
+          <div class="healthbar">
+            <div class="healthbar text-center" :style="monsterBarStyle">
+              {{ monsterWidth }}
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="row controls" v-if="show">
+        <div class="small-12 columns">
+          <button id="start-game" @click="newGame()">
+            START NEW GAME
+          </button>
+        </div>
+      </section>
+      <section class="row controls" v-if="!show">
+        <div class="small-12 columns">
+          <button id="attack" @click="attack">
+            ATTACK
+          </button>
+          <button id="special-attack" @click="specialAttack">
+            SPECIAL ATTACK
+          </button>
+          <button id="heal" @click="heal">HEAL</button>
+          <button id="give-up" @click="show = !show">GIVE UP</button>
+        </div>
+      </section>
+      <section class="row log" v-if="attacking">
+        <div class="small-12 columns">
+          <ul>
+            <li v-for="turn in turns.slice().reverse()" :class="turn.type">
+              {{ turn.value }}
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+    <script>
+      new Vue({
+        el: "#app",
+        data: {
+          show: true,
+          attacking: false,
+          turns: [],
+          playerWidth: 100,
+          monsterWidth: 100
+        },
+        computed: {
+          playerBarStyle: function() {
+            return {
+              backgroundColor: "green",
+              margin: 0,
+              color: "#fff",
+              width: this.playerWidth + "%"
+            };
+          },
+          monsterBarStyle: function(value) {
+            return {
+              backgroundColor: "green",
+              margin: 0,
+              color: "#fff",
+              width: this.monsterWidth + "%"
+            };
+          }
+        },
+        methods: {
+          newGame: function() {
+            console.log("new game");
+            this.attacking = false;
+            this.show = !this.show;
+            this.turns.splice(0, this.turns.length);
+            this.playerWidth = 100;
+            this.monsterWidth = 100;
+          },
+          attack: function() {
+            console.log("attack");
+            this.attacking = true;
+            monsterHit = Math.floor(Math.random() * 15);
+            playerHit = Math.floor(Math.random() * 15);
+            this.turns.push({
+              type: "player-turn",
+              value: "player hits monster for " + playerHit
+            });
+            this.turns.push({
+              type: "monster-turn",
+              value: "monster hits player for " + monsterHit
+            });
+            this.playerWidth -= monsterHit;
+            this.monsterWidth -= playerHit;
+            this.finish();
+          },
+          specialAttack: function() {
+            console.log("special attack");
+            this.attacking = true;
+            monsterHit = Math.floor(Math.random() * 15);
+            playerHit = Math.floor(Math.random() * 10) + 10;
+            this.turns.push({
+              type: "player-turn",
+              value: "player hits monster hard for " + playerHit
+            });
+            this.turns.push({
+              type: "monster-turn",
+              value: "monster hits player for " + monsterHit
+            });
+            this.playerWidth -= monsterHit;
+            this.monsterWidth -= playerHit;
+            this.finish();
+          },
+          heal: function() {
+            console.log("heal");
+            this.attacking = true;
+            monsterHit = Math.floor(Math.random() * 15);
+            playerHeal = Math.floor(Math.random() * 15) + 2;
+            this.turns.push({
+              type: "player-turn",
+              value: "player heals for " + playerHeal
+            });
+            this.turns.push({
+              type: "monster-turn",
+              value: "monster hits player for " + monsterHit
+            });
+            this.playerWidth -= monsterHit;
+            this.playerWidth += playerHeal;
+            if (this.playerWidth > 100) {
+              this.playerWidth = 100;
+            }
+            this.finish();
+          },
+          finish: function() {
+            if (this.monsterWidth <= 0) {
+              this.monsterWidth = 0;
+              if (confirm("You Won! New Game?")) {
+                this.attacking = false;
+                this.turns.splice(0, this.turns.length);
+                this.playerWidth = 100;
+                this.monsterWidth = 100;
+              } else {
+                this.show = !this.show;
+              }
+            } else if (this.playerWidth <= 0) {
+              this.playerWidth = 0;
+              if (confirm("You lost! New Game?")) {
+                this.attacking = false;
+                this.turns.splice(0, this.turns.length);
+                this.playerWidth = 100;
+                this.monsterWidth = 100;
+              } else {
+                this.show = !this.show;
+              }
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
+
